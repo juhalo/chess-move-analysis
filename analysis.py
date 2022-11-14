@@ -17,12 +17,21 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     df_black = pd.DataFrame(black_games)
     #print(df_white)
     #print(df_black)
-    print(analyse(df_white))
-    print(analyse(df_black))
-    p_white = analyse2(df_white)
-    p_black = analyse2(df_black)
-    print(p_white.sort_values(by="P"))
-    print(p_black.sort_values(by="P"))
+    white_ana = analyse(df_white) 
+    black_ana = analyse(df_black)
+    # print(white_ana)
+    # print(black_ana)
+    p_white = analyse2(df_white).sort_values(by="P")
+    p_black = analyse2(df_black).sort_values(by="P")
+    #print(p_white)
+    # print(p_black)
+    p_white.to_json('pos.json', orient = 'split', compression = 'infer')
+    p_black.to_json('neg.json', orient = 'split', compression = 'infer')
+    with open('reg.txt', 'w') as f:
+        f.write(str(white_ana))
+        f.write('\n')
+        f.write(str(black_ana))
+    
 
 def analyse2(df):
     p = pd.DataFrame()
