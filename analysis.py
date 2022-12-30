@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn import linear_model, model_selection, feature_selection
 import time
+import statsmodels.formula.api as smf
 
 def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     white, black = load(playerName, game_type, max_game, as_pgn)
@@ -52,8 +53,11 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     black_ana = analyse(df_black)
     print(white_ana)
     print(black_ana)
-    p_white = analyse2(df_white).sort_values(by="P")
-    p_black = analyse2(df_black).sort_values(by="P")
+    p_white = analyse3(df_white)
+    p_black = analyse3(df_black)
+    # p_white = analyse2(df_white).sort_values(by="P")
+    # p_black = analyse2(df_black).sort_values(by="P")
+    p_white = pd.DataFrame(p_white.pvalues[1:]).sort_values(by=0)
     print(p_white)
     print(p_black)
     p_white.to_json('pos.json', orient = 'split', compression = 'infer')
@@ -63,6 +67,25 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
         f.write('\n')
         f.write(str(black_ana))
     
+
+def analyse3(df):
+    p = pd.DataFrame()
+    p["Moves"] = list(df.columns)[1:]
+    columns = [col for col in df.columns]
+    # print(columns)
+    arg = columns[0] + " ~  " + columns[1] 
+    for col in columns[2:]:
+        arg += " + " + col
+    # p["P"] = feature_selection.f_regression(df[list(df.columns)[1:]], df.winner)[1]
+    # print(arg)
+    log_reg = smf.logit(arg, data=df).fit()
+    in_sample = pd.DataFrame({'prob':log_reg.predict()})
+    in_sample['pred_label'] = (in_sample['prob']>0.5).astype(int)
+    # print(in_sample)
+    # print(pd.crosstab(in_sample['pred_label'],df[columns[0]]))
+    # print(in_sample['pred_label'].sum(), in_sample['pred_label'].count(), df[columns[0]].sum())
+    # print(log_reg.summary())
+    return log_reg
 
 def analyse2(df):
     p = pd.DataFrame()
