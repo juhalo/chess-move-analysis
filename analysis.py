@@ -23,8 +23,31 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     # print("Black:",black_games)
     df_white = pd.DataFrame(white_games)
     df_black = pd.DataFrame(black_games)
-    print(df_white)
-    print(df_black)
+    for col in df_white.columns:
+        df_white[col] = df_white[col].astype('category').cat.codes
+    for col in df_black.columns:
+        df_black[col] = df_black[col].astype('category').cat.codes
+    # letters = 'abcdefgh'
+    # for letter in letters:
+    #     df_white = df_white.drop([letter+"4"], axis=1)
+    #     df_black = df_black.drop([letter+"5"], axis=1)
+    df_white_loss = df_white[df_white['winner']==0]
+    df_white_win = df_white[df_white['winner']==1]
+    #This makes the distribution of wins and losses more similar to allow for better comparison
+    if df_white_loss['winner'].count() < df_white_win['winner'].count():
+        df_white_win = df_white_win.head(df_white_loss['winner'].count())
+    else:
+        df_white_loss = df_white_loss.head(df_white_win['winner'].count())
+    df_white = pd.concat([df_white_win, df_white_loss])
+    # print(df_white)
+    df_black_loss = df_black[df_black['winner']==0]
+    df_black_win = df_black[df_black['winner']==1]
+    if df_black_loss['winner'].count() < df_black_win['winner'].count():
+        df_black_win = df_black_win.head(df_black_loss['winner'].count())
+    else:
+        df_black_loss = df_black_loss.head(df_black_win['winner'].count())
+    df_black = pd.concat([df_black_win, df_black_loss])
+    # print(df_black)
     white_ana = analyse(df_white) 
     black_ana = analyse(df_black)
     print(white_ana)
