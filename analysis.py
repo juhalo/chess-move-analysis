@@ -7,24 +7,26 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     white, black = load(playerName, game_type, max_game, as_pgn)
     white_games = []
     black_games = []
+    print(white)
+    print(black)
     for times in range(300):
         game_to_list(white_games, black_games, white, black)
-    #print("White:",white_games)
-    #print("")
-    #print("")
-    #print("Black:",black_games)
+    # print("White:",white_games)
+    # print("")
+    # print("")
+    # print("Black:",black_games)
     df_white = pd.DataFrame(white_games)
     df_black = pd.DataFrame(black_games)
-    #print(df_white)
-    #print(df_black)
+    print(df_white)
+    print(df_black)
     white_ana = analyse(df_white) 
     black_ana = analyse(df_black)
-    # print(white_ana)
-    # print(black_ana)
+    print(white_ana)
+    print(black_ana)
     p_white = analyse2(df_white).sort_values(by="P")
     p_black = analyse2(df_black).sort_values(by="P")
-    #print(p_white)
-    # print(p_black)
+    print(p_white)
+    print(p_black)
     p_white.to_json('pos.json', orient = 'split', compression = 'infer')
     p_black.to_json('neg.json', orient = 'split', compression = 'infer')
     with open('reg.txt', 'w') as f:
@@ -42,12 +44,13 @@ def analyse2(df):
 def analyse(df):
     X_train, X_test, y_train, y_test = model_selection.train_test_split(df.drop(['winner'], axis=1), df.winner)
 
-    reg_views = linear_model.LinearRegression().fit(X_train, y_train)
+    reg_views = linear_model.LogisticRegression().fit(X_train, y_train)
     return reg_views.score(X_test, y_test)
 
 
 def load(player: str, game: str, max: int, pgn: bool):
-    client = berserk.Client()
+    session = berserk.TokenSession('lip_IcEC8JTT9lYcvdCWspNh')
+    client = berserk.Client(session=session)
     #Generator for the games (black and white seperately)
     white = client.games.export_by_player(player, perf_type=game, max=max, color="white", as_pgn=pgn)
     black = client.games.export_by_player(player, perf_type=game, max=max, color="black", as_pgn=pgn)
@@ -66,31 +69,33 @@ def game_to_list(white_games, black_games, white, black):
         if 'winner' in white_game.keys():
             win = white_game['winner']
             if win == 'white':
-                win = 0
-            else:
                 win = 1
+            else:
+                win = 0
             white_game_dict['winner'] = win
         white_games_array = white_game['moves'].split()
         for i in range(len(white_games_array)):
             #White starts, indices 0,2,4,.. are white's moves
             if i % 2 == 0 and white_games_array[i] in white_game_dict.keys():
                 white_game_dict[white_games_array[i]] = True
-        white_games.append(white_game_dict)
+        if white_game_dict['winner'] != 0.5:
+            white_games.append(white_game_dict)
 
     black_game = next(black)
     if 'initialFen' not in black_game.keys():
         if 'winner' in black_game.keys():
             win = black_game['winner']
             if win == 'black':
-                win = 0
-            else:
                 win = 1
+            else:
+                win = 0
             black_game_dict['winner'] = win
         black_games_array = black_game['moves'].split()
         for i in range(len(black_games_array)):
             if i % 2 != 0 and black_games_array[i] in black_game_dict.keys():
                 black_game_dict[black_games_array[i]] = True
-        black_games.append(black_game_dict)
+        if black_game_dict['winner'] != 0.5:
+            black_games.append(black_game_dict)
 
 
 if __name__ == "__main__":
