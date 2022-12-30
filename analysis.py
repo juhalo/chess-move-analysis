@@ -61,9 +61,11 @@ def game_to_list(white_games, black_games, white, black):
     #We care about overextention, therefore moves that take are hard to evaluate as well as pawn moves that are checks
     #Therefore those are ignored, also pushing to 6th rank or further probably means either the pawn was doomed to die anyway or it is going towards queening, both of which are hard to evaluate in terms of overextension.  
     #If there is no winner, the game was a draw, the generator ignores aborted games automatically, here draw=0.5, loss=1, and win=0
-    white_game_dict = {'winner': 0.5, 'a4': False, 'a5': False, 'b4': False, 'b5': False, 'c4': False, 'c5': False, 'd4': False, 'd5': False, 'e4': False, 'e5': False, 'f4': False, 'f5': False, 'g4': False, 'g5': False, 'h4': False, 'h5': False}
+    # white_game_dict = {'winner': 0.5, 'a4': False, 'a5': False, 'b4': False, 'b5': False, 'c4': False, 'c5': False, 'd4': False, 'd5': False, 'e4': False, 'e5': False, 'f4': False, 'f5': False, 'g4': False, 'g5': False, 'h4': False, 'h5': False}
     #black_game_dict = {'winner': 'draw', 'a4': 0, 'a5': 0, 'b4': 0, 'b5': 0, 'c4': 0, 'c5': 0, 'd4': 0, 'd5': 0, 'e4': 0, 'e5': 0, 'f4': 0, 'f5': 0, 'g4': 0, 'g5': 0, 'h4': 0, 'h5': 0}
-    black_game_dict = {'winner': 0.5, 'a4': False, 'a5': False, 'b4': False, 'b5': False, 'c4': False, 'c5': False, 'd4': False, 'd5': False, 'e4': False, 'e5': False, 'f4': False, 'f5': False, 'g4': False, 'g5': False, 'h4': False, 'h5': False}
+    white_game_dict = {'winner': 0.5, 'a4': 0, 'a5': 0, 'a6': 0, 'b4': 0, 'b5': 0, 'b6': 0, 'c4': 0, 'c5': 0, 'c6': 0, 'd4': 0, 'd5': 0, 'd6': 0, 'e4': 0, 'e5': 0, 'e6': 0, 'f4': 0, 'f5': 0, 'f6': 0, 'g4': 0, 'g5': 0, 'g6': 0, 'h4': 0, 'h5': 0, 'h6': 0}
+    # black_game_dict = {'winner': 0.5, 'a4': False, 'a5': False, 'b4': False, 'b5': False, 'c4': False, 'c5': False, 'd4': False, 'd5': False, 'e4': False, 'e5': False, 'f4': False, 'f5': False, 'g4': False, 'g5': False, 'h4': False, 'h5': False}
+    black_game_dict = {'winner': 0.5, 'a3': 0, 'a4': 0, 'a5': 0, 'b3': 0, 'b4': 0, 'b5': 0, 'c3': 0, 'c4': 0, 'c5': 0, 'd3': 0, 'd4': 0, 'd5': 0, 'e3': 0, 'e4': 0, 'e5': 0, 'f3': 0, 'f4': 0, 'f5': 0, 'g3': 0, 'g4': 0, 'g5': 0, 'h3': 0, 'h4': 0, 'h5': 0}
     #Checks whether or not the starting position is the standard or not, ignores non-standard starting positions 
     if 'initialFen' not in white_game.keys():
         if 'winner' in white_game.keys():
@@ -77,7 +79,7 @@ def game_to_list(white_games, black_games, white, black):
         for i in range(len(white_games_array)):
             #White starts, indices 0,2,4,.. are white's moves
             if i % 2 == 0 and white_games_array[i] in white_game_dict.keys():
-                white_game_dict[white_games_array[i]] = True
+                white_game_dict[white_games_array[i]] = 1
         if white_game_dict['winner'] != 0.5:
             white_games.append(white_game_dict)
 
@@ -93,7 +95,7 @@ def game_to_list(white_games, black_games, white, black):
         black_games_array = black_game['moves'].split()
         for i in range(len(black_games_array)):
             if i % 2 != 0 and black_games_array[i] in black_game_dict.keys():
-                black_game_dict[black_games_array[i]] = True
+                black_game_dict[black_games_array[i]] = 1
         if black_game_dict['winner'] != 0.5:
             black_games.append(black_game_dict)
 
