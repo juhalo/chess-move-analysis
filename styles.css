@@ -66,3 +66,24 @@ a {
   width: 75%;
   border-radius: 10px;
 }
+
+#main-body-content {
+  display: grid;
+  grid-template: 1fr 5fr / 1fr 1fr;
+  justify-items: center;
+  grid-template-areas:
+    'header     header'
+    'left-side  right-side';
+}
+
+#main-body-header {
+  grid-area: header;
+}
+
+#main-body-left {
+  grid-area: left-side;
+}
+
+#main-body-right {
+  grid-area: right-side;
+}
