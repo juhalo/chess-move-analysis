@@ -6,7 +6,7 @@ function createElement(text, rightOrLeft, num) {
     container = document.querySelector('#main-right-content');
   }
   const newDiv = document.createElement('div');
-  newDiv.textContent = num + '. ' + text;
+  newDiv.textContent = num + ': ' + text;
   container.appendChild(newDiv);
 }
 
