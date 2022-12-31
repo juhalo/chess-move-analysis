@@ -71,9 +71,9 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     p_white.to_json('pos.json', orient = 'split', compression = 'infer')
     p_black.to_json('neg.json', orient = 'split', compression = 'infer')
     with open('reg.txt', 'w') as f:
-        f.write(str(white_ana[0]) + ", " + str(white_ana[1]) + ", " + w_acc)
+        f.write(str(white_ana[0]) + ", " + str(white_ana[1]) + ", " + str(w_acc))
         f.write('\n')
-        f.write(str(black_ana[0]) + ", " + str(black_ana[1]) + ", " + b_acc)
+        f.write(str(black_ana[0]) + ", " + str(black_ana[1]) + ", " + str(b_acc))
     
 
 def analyse3(df):
@@ -114,9 +114,6 @@ def analyse(df):
     # result=logit_model.fit()
     # print(result.summary())
     return reg_views_score, reg_views2_score
-
-    reg_views = linear_model.LogisticRegression().fit(X_train, y_train)
-    return reg_views.score(X_test, y_test)
 
 
 def load(player: str, game: str, max: int, pgn: bool):
