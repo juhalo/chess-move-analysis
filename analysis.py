@@ -4,13 +4,14 @@ import numpy as np
 from sklearn import linear_model, model_selection, feature_selection
 import time
 import statsmodels.formula.api as smf
+from sklearn.metrics import (confusion_matrix, accuracy_score)
 
 def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     white, black = load(playerName, game_type, max_game, as_pgn)
     white_games = []
     black_games = []
-    print(white)
-    print(black)
+    # print(white)
+    # print(black)
     #White and black are done seperately due to reducing the requests
     for _ in range(max_game):
         try:
@@ -57,10 +58,10 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     # print(df_black)
     white_ana = analyse(df_white) 
     black_ana = analyse(df_black)
-    print(white_ana)
-    print(black_ana)
-    p_white = analyse3(df_white)
-    p_black = analyse3(df_black)
+    # print(white_ana)
+    # print(black_ana)
+    p_white, w_acc = analyse3(df_white)
+    p_black, b_acc = analyse3(df_black)
     # p_white = analyse2(df_white).sort_values(by="P")
     # p_black = analyse2(df_black).sort_values(by="P")
     p_white = pd.DataFrame(p_white.pvalues[1:]).sort_values(by=0)
@@ -70,9 +71,9 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     p_white.to_json('pos.json', orient = 'split', compression = 'infer')
     p_black.to_json('neg.json', orient = 'split', compression = 'infer')
     with open('reg.txt', 'w') as f:
-        f.write(str(white_ana))
+        f.write(str(white_ana[0]) + ", " + str(white_ana[1]) + ", " + w_acc)
         f.write('\n')
-        f.write(str(black_ana))
+        f.write(str(black_ana[0]) + ", " + str(black_ana[1]) + ", " + b_acc)
     
 
 def analyse3(df):
@@ -92,7 +93,7 @@ def analyse3(df):
     # print(pd.crosstab(in_sample['pred_label'],df[columns[0]]))
     # print(in_sample['pred_label'].sum(), in_sample['pred_label'].count(), df[columns[0]].sum())
     # print(log_reg.summary())
-    return log_reg
+    return log_reg, accuracy_score(df[columns[0]], in_sample['pred_label'])
 
 def analyse2(df):
     p = pd.DataFrame()
@@ -101,7 +102,18 @@ def analyse2(df):
     return p
 
 def analyse(df):
+    df_now = df.drop(['winner'], axis=1)
+    win = df['winner']
     X_train, X_test, y_train, y_test = model_selection.train_test_split(df.drop(['winner'], axis=1), df.winner)
+
+    reg_views = linear_model.LogisticRegression().fit(X_train, y_train)
+    reg_views_score = reg_views.score(X_test, y_test)
+    reg_views2 = linear_model.LogisticRegression().fit(df_now, win)
+    reg_views2_score = reg_views2.score(df_now, win)
+    # logit_model=sm.Logit(y_train, X_train)
+    # result=logit_model.fit()
+    # print(result.summary())
+    return reg_views_score, reg_views2_score
 
     reg_views = linear_model.LogisticRegression().fit(X_train, y_train)
     return reg_views.score(X_test, y_test)
