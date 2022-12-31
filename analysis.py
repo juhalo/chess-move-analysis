@@ -4,6 +4,7 @@ import numpy as np
 from sklearn import linear_model, model_selection, feature_selection
 import time
 import statsmodels.formula.api as smf
+import statsmodels.api as sm
 from sklearn.metrics import accuracy_score
 
 def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
@@ -50,8 +51,8 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     df_black = pd.concat([df_black_win, df_black_loss])
     white_ana = analyse(df_white) 
     black_ana = analyse(df_black)
-    p_white, w_acc = analyse3(df_white)
-    p_black, b_acc = analyse3(df_black)
+    p_white, w_acc = analyse4(df_white)
+    p_black, b_acc = analyse4(df_black)
     # p_white = analyse2(df_white).sort_values(by="P")
     # p_black = analyse2(df_black).sort_values(by="P")
     p_white = pd.DataFrame(p_white.pvalues[1:]).sort_values(by=0)
@@ -74,6 +75,14 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
         f.write('\n')
         f.write(str(black_ana[0]) + ", " + str(black_ana[1]) + ", " + str(b_acc))
     
+def analyse4(df):
+    df_now = df.drop(['winner'], axis=1)
+    win = df['winner']
+    logit_model=sm.Logit(win, df_now)
+    result=logit_model.fit()
+    in_sample = pd.DataFrame({'prob':result.predict()})
+    in_sample['pred_label'] = (in_sample['prob']>0.5).astype(int)
+    return result, accuracy_score(df['winner'], in_sample['pred_label'])
 
 def analyse3(df):
     columns = [col for col in df.columns]
