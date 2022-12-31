@@ -7,6 +7,11 @@ import statsmodels.formula.api as smf
 import statsmodels.api as sm
 from sklearn.metrics import accuracy_score
 
+# player_name: username on lichess.org
+# game_type: specifies the game type, e.g. 'blitz', 'bullet'
+# max_games: defines how many games the generator uses
+# as_pgn: defines in which format the games are streamed
+# sm_or_not: defined the function used to in the analysis, if 'False', then uses smf (see above)  
 def main(player_name: str, game_type: str, max_game: int, as_pgn: bool, sm_or_not: bool):
     white, black = load(player_name, game_type, max_game, as_pgn)
     white_games = []
@@ -58,8 +63,6 @@ def main(player_name: str, game_type: str, max_game: int, as_pgn: bool, sm_or_no
     else:
         p_white, w_acc = smf_logit(df_white)
         p_black, b_acc = smf_logit(df_black)
-    # p_white = analyse2(df_white).sort_values(by="P")
-    # p_black = analyse2(df_black).sort_values(by="P")
     p_white = pd.DataFrame(p_white.pvalues[1:]).sort_values(by=0)
     p_white.columns = ['pvalue']
     p_white['include'] = p_white['pvalue']<=0.15
