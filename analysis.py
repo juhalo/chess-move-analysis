@@ -65,7 +65,18 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     # p_white = analyse2(df_white).sort_values(by="P")
     # p_black = analyse2(df_black).sort_values(by="P")
     p_white = pd.DataFrame(p_white.pvalues[1:]).sort_values(by=0)
+    p_white.columns = ['pvalue']
+    p_white['include'] = p_white['pvalue']<=0.15
+    for i in p_white.index:
+        #We only want moves that are statistically somewhat significant for the result as well as it accounts for a lot of the losses compared to the wins (note that 'a lot' here does not mean there is more losses than wins with it)
+        if p_white.loc[i, 'include'] and 2.5*df_white_loss[i].sum()/df_white_loss[i].count()<=df_white_win[i].sum()/df_white_win[i].count():
+            p_white.loc[i, 'include'] = False
     p_black = pd.DataFrame(p_black.pvalues[1:]).sort_values(by=0)
+    p_black.columns = ['pvalue']
+    p_black['include'] = p_black['pvalue']<=0.15
+    for i in p_black.index:
+        if p_black.loc[i, 'include'] and 2.5*df_black_loss[i].sum()/df_black_loss[i].count()<=df_black_win[i].sum()/df_black_win[i].count():
+            p_black.loc[i, 'include'] = False
     # print(p_white)
     # print(p_black)
     p_white.to_json('pos.json', orient = 'split', compression = 'infer')
