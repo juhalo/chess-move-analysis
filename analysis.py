@@ -7,8 +7,8 @@ import statsmodels.formula.api as smf
 import statsmodels.api as sm
 from sklearn.metrics import accuracy_score
 
-def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
-    white, black = load(playerName, game_type, max_game, as_pgn)
+def main(player_name: str, game_type: str, max_game: int, as_pgn: bool, sm_or_not: bool):
+    white, black = load(player_name, game_type, max_game, as_pgn)
     white_games = []
     black_games = []
     #White and black are done seperately due to reducing the requests
@@ -52,8 +52,12 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     df_black = pd.concat([df_black_win, df_black_loss])
     white_ana = logistic_regression(df_white) 
     black_ana = logistic_regression(df_black)
-    p_white, w_acc = sm_logit(df_white)
-    p_black, b_acc = sm_logit(df_black)
+    if sm_or_not:
+        p_white, w_acc = sm_logit(df_white)
+        p_black, b_acc = sm_logit(df_black)
+    else:
+        p_white, w_acc = smf_logit(df_white)
+        p_black, b_acc = smf_logit(df_black)
     # p_white = analyse2(df_white).sort_values(by="P")
     # p_black = analyse2(df_black).sort_values(by="P")
     p_white = pd.DataFrame(p_white.pvalues[1:]).sort_values(by=0)
@@ -110,9 +114,6 @@ def logistic_regression(df):
     reg_views_score = reg_views.score(X_test, y_test)
     reg_views2 = linear_model.LogisticRegression().fit(df_now, win)
     reg_views2_score = reg_views2.score(df_now, win)
-    # logit_model=sm.Logit(y_train, X_train)
-    # result=logit_model.fit()
-    # print(result.summary())
     return reg_views_score, reg_views2_score
 
 
@@ -171,4 +172,4 @@ def game_to_list(white_games, black_games, white, black, white_or_not):
 
 
 if __name__ == "__main__":
-    main('penguingim1', 'blitz', 1000, False)
+    main('penguingim1', 'blitz', 1000, False, True)
