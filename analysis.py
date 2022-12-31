@@ -30,6 +30,7 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
         df_white[col] = df_white[col].astype('category').cat.codes
     for col in df_black.columns:
         df_black[col] = df_black[col].astype('category').cat.codes
+    # Removing the below might make for better results:
     # letters = 'abcdefgh'
     # for letter in letters:
     #     df_white = df_white.drop([letter+"4"], axis=1)
@@ -49,10 +50,10 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     else:
         df_black_loss = df_black_loss.head(df_black_win['winner'].count())
     df_black = pd.concat([df_black_win, df_black_loss])
-    white_ana = analyse(df_white) 
-    black_ana = analyse(df_black)
-    p_white, w_acc = analyse4(df_white)
-    p_black, b_acc = analyse4(df_black)
+    white_ana = logistic_regression(df_white) 
+    black_ana = logistic_regression(df_black)
+    p_white, w_acc = sm_logit(df_white)
+    p_black, b_acc = sm_logit(df_black)
     # p_white = analyse2(df_white).sort_values(by="P")
     # p_black = analyse2(df_black).sort_values(by="P")
     p_white = pd.DataFrame(p_white.pvalues[1:]).sort_values(by=0)
@@ -75,7 +76,7 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
         f.write('\n')
         f.write(str(black_ana[0]) + ", " + str(black_ana[1]) + ", " + str(b_acc))
     
-def analyse4(df):
+def sm_logit(df):
     df_now = df.drop(['winner'], axis=1)
     win = df['winner']
     logit_model=sm.Logit(win, df_now)
@@ -84,7 +85,7 @@ def analyse4(df):
     in_sample['pred_label'] = (in_sample['prob']>0.5).astype(int)
     return result, accuracy_score(df['winner'], in_sample['pred_label'])
 
-def analyse3(df):
+def smf_logit(df):
     columns = [col for col in df.columns]
     arg = columns[0] + " ~  " + columns[1] 
     for col in columns[2:]:
@@ -94,13 +95,13 @@ def analyse3(df):
     in_sample['pred_label'] = (in_sample['prob']>0.5).astype(int)
     return log_reg, accuracy_score(df[columns[0]], in_sample['pred_label'])
 
-def analyse2(df):
+def regression(df):
     p = pd.DataFrame()
     p["Moves"] = list(df.columns)[1:]
     p["P"] = feature_selection.f_regression(df[list(df.columns)[1:]], df.winner)[1]
     return p
 
-def analyse(df):
+def logistic_regression(df):
     df_now = df.drop(['winner'], axis=1)
     win = df['winner']
     X_train, X_test, y_train, y_test = model_selection.train_test_split(df.drop(['winner'], axis=1), df.winner)
@@ -170,4 +171,4 @@ def game_to_list(white_games, black_games, white, black, white_or_not):
 
 
 if __name__ == "__main__":
-    main('C9C9C9C9C9', 'blitz', 1000, False)
+    main('penguingim1', 'blitz', 1000, False)
