@@ -4,14 +4,12 @@ import numpy as np
 from sklearn import linear_model, model_selection, feature_selection
 import time
 import statsmodels.formula.api as smf
-from sklearn.metrics import (confusion_matrix, accuracy_score)
+from sklearn.metrics import accuracy_score
 
 def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     white, black = load(playerName, game_type, max_game, as_pgn)
     white_games = []
     black_games = []
-    # print(white)
-    # print(black)
     #White and black are done seperately due to reducing the requests
     for _ in range(max_game):
         try:
@@ -25,10 +23,6 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
             game_to_list(white_games, black_games, white, black, False)
         except StopIteration:
             break
-    # print("White:",white_games)
-    # print("")
-    # print("")
-    # print("Black:",black_games)
     df_white = pd.DataFrame(white_games)
     df_black = pd.DataFrame(black_games)
     for col in df_white.columns:
@@ -47,7 +41,6 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     else:
         df_white_loss = df_white_loss.head(df_white_win['winner'].count())
     df_white = pd.concat([df_white_win, df_white_loss])
-    # print(df_white)
     df_black_loss = df_black[df_black['winner']==0]
     df_black_win = df_black[df_black['winner']==1]
     if df_black_loss['winner'].count() < df_black_win['winner'].count():
@@ -55,11 +48,8 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     else:
         df_black_loss = df_black_loss.head(df_black_win['winner'].count())
     df_black = pd.concat([df_black_win, df_black_loss])
-    # print(df_black)
     white_ana = analyse(df_white) 
     black_ana = analyse(df_black)
-    # print(white_ana)
-    # print(black_ana)
     p_white, w_acc = analyse3(df_white)
     p_black, b_acc = analyse3(df_black)
     # p_white = analyse2(df_white).sort_values(by="P")
@@ -77,8 +67,6 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     for i in p_black.index:
         if p_black.loc[i, 'include'] and 2.5*df_black_loss[i].sum()/df_black_loss[i].count()<=df_black_win[i].sum()/df_black_win[i].count():
             p_black.loc[i, 'include'] = False
-    # print(p_white)
-    # print(p_black)
     p_white.to_json('pos.json', orient = 'split', compression = 'infer')
     p_black.to_json('neg.json', orient = 'split', compression = 'infer')
     with open('reg.txt', 'w') as f:
@@ -88,22 +76,13 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     
 
 def analyse3(df):
-    # p = pd.DataFrame()
-    # p["Moves"] = list(df.columns)[1:]
     columns = [col for col in df.columns]
-    # print(columns)
     arg = columns[0] + " ~  " + columns[1] 
     for col in columns[2:]:
         arg += " + " + col
-    # p["P"] = feature_selection.f_regression(df[list(df.columns)[1:]], df.winner)[1]
-    # print(arg)
     log_reg = smf.logit(arg, data=df).fit()
     in_sample = pd.DataFrame({'prob':log_reg.predict()})
     in_sample['pred_label'] = (in_sample['prob']>0.5).astype(int)
-    # print(in_sample)
-    # print(pd.crosstab(in_sample['pred_label'],df[columns[0]]))
-    # print(in_sample['pred_label'].sum(), in_sample['pred_label'].count(), df[columns[0]].sum())
-    # print(log_reg.summary())
     return log_reg, accuracy_score(df[columns[0]], in_sample['pred_label'])
 
 def analyse2(df):
@@ -142,8 +121,7 @@ def game_to_list(white_games, black_games, white, black, white_or_not):
         #We care about overextention, therefore moves that take are hard to evaluate as well as pawn moves that are checks
         #Therefore those are ignored, also pushing to 6th rank or further probably means either the pawn was doomed to die anyway or it is going towards queening, both of which are hard to evaluate in terms of overextension.  
         #If there is no winner, the game was a draw, the generator ignores aborted games automatically, here draw=0.5, loss=1, and win=0
-        # white_game_dict = {'winner': 0.5, 'a4': False, 'a5': False, 'b4': False, 'b5': False, 'c4': False, 'c5': False, 'd4': False, 'd5': False, 'e4': False, 'e5': False, 'f4': False, 'f5': False, 'g4': False, 'g5': False, 'h4': False, 'h5': False}
-        #black_game_dict = {'winner': 'draw', 'a4': 0, 'a5': 0, 'b4': 0, 'b5': 0, 'c4': 0, 'c5': 0, 'd4': 0, 'd5': 0, 'e4': 0, 'e5': 0, 'f4': 0, 'f5': 0, 'g4': 0, 'g5': 0, 'h4': 0, 'h5': 0}
+        #Draws are removed since we care about only wins and losses
         white_game_dict = {'winner': 0.5, 'a4': 0, 'a5': 0, 'a6': 0, 'b4': 0, 'b5': 0, 'b6': 0, 'c4': 0, 'c5': 0, 'c6': 0, 'd4': 0, 'd5': 0, 'd6': 0, 'e4': 0, 'e5': 0, 'e6': 0, 'f4': 0, 'f5': 0, 'f6': 0, 'g4': 0, 'g5': 0, 'g6': 0, 'h4': 0, 'h5': 0, 'h6': 0}
         #Checks whether or not the starting position is the standard or not, ignores non-standard starting positions 
         if 'initialFen' not in white_game.keys():
@@ -163,7 +141,6 @@ def game_to_list(white_games, black_games, white, black, white_or_not):
                 white_games.append(white_game_dict)
         return
 
-    # black_game_dict = {'winner': 0.5, 'a4': False, 'a5': False, 'b4': False, 'b5': False, 'c4': False, 'c5': False, 'd4': False, 'd5': False, 'e4': False, 'e5': False, 'f4': False, 'f5': False, 'g4': False, 'g5': False, 'h4': False, 'h5': False}
     black_game_dict = {'winner': 0.5, 'a3': 0, 'a4': 0, 'a5': 0, 'b3': 0, 'b4': 0, 'b5': 0, 'c3': 0, 'c4': 0, 'c5': 0, 'd3': 0, 'd4': 0, 'd5': 0, 'e3': 0, 'e4': 0, 'e5': 0, 'f3': 0, 'f4': 0, 'f5': 0, 'g3': 0, 'g4': 0, 'g5': 0, 'h3': 0, 'h4': 0, 'h5': 0}
 
     black_game = next(black)
