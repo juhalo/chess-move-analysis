@@ -12,12 +12,18 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     print(white)
     print(black)
     #White and black are done seperately due to reducing the requests
-    for times in range(max_game):
-        game_to_list(white_games, black_games, white, black, True)
+    for _ in range(max_game):
+        try:
+            game_to_list(white_games, black_games, white, black, True)
+        except StopIteration:
+            break
     #Sleep helps at not doing too many queries too quickly, would result in error otherwise
     time.sleep(60)
-    for times in range(max_game):
-        game_to_list(white_games, black_games, white, black, False)
+    for _ in range(max_game):
+        try:
+            game_to_list(white_games, black_games, white, black, False)
+        except StopIteration:
+            break
     # print("White:",white_games)
     # print("")
     # print("")
@@ -58,8 +64,9 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     # p_white = analyse2(df_white).sort_values(by="P")
     # p_black = analyse2(df_black).sort_values(by="P")
     p_white = pd.DataFrame(p_white.pvalues[1:]).sort_values(by=0)
-    print(p_white)
-    print(p_black)
+    p_black = pd.DataFrame(p_black.pvalues[1:]).sort_values(by=0)
+    # print(p_white)
+    # print(p_black)
     p_white.to_json('pos.json', orient = 'split', compression = 'infer')
     p_black.to_json('neg.json', orient = 'split', compression = 'infer')
     with open('reg.txt', 'w') as f:
@@ -69,8 +76,8 @@ def main(playerName: str, game_type: str, max_game: int, as_pgn: bool):
     
 
 def analyse3(df):
-    p = pd.DataFrame()
-    p["Moves"] = list(df.columns)[1:]
+    # p = pd.DataFrame()
+    # p["Moves"] = list(df.columns)[1:]
     columns = [col for col in df.columns]
     # print(columns)
     arg = columns[0] + " ~  " + columns[1] 
