@@ -19,3 +19,5 @@ The general look is below:
 ## Credits
 
 The project uses ZackClements client called [berserk](https://github.com/ZackClements/berserk) for the lichess API. This is used to get the games from the API.
+
+The layout of the project copies the layout of [lichess](https://lichess.org) since it is meant as a light project for analyzing pawn pushes in a lichess user's games.
