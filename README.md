@@ -8,6 +8,14 @@ This project applies simple data analysis of chess games of a specified user on 
 
 By changing the username at the bottom of the analysis.py file you can specify the username for which the analysis is run. Other things can be specified such as the function that does the analysis and what is the type of the game, e.g. blitz or bullet. Currently doing so changes the JSON files, but does not automatically affect the JS or HTML files.
 
+## Layout
+
+Deployment: [here](https://juhalo.github.io/chess-move-analysis/)
+
+The general look is below:
+
+![Layout of the page](./layout.png)
+
 ## Credits
 
 The project uses ZackClements client called [berserk](https://github.com/ZackClements/berserk) for the lichess API. This is used to get the games from the API.
